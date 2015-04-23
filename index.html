@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Conway's Game of Life in ScalaJS</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+</head>
+<body>
+    <a href="https://github.com/ivanyu/life-scalajs">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png">
+    </a>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Conway's Game of Life in ScalaJS</h1>
+            <p>This is a simple implementation of <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Conway's Game of Life</a>
+                simulator with <a href="http://www.scala-js.org/">ScalaJS</a> and <a href="https://github.com/lihaoyi/scala.rx">ScalaRx</a>.</p>
+            <p>Created just for fun by <a href="http://ivanyu.me/">Ivan Yurchenko</a>.
+                Sources are <a href="https://github.com/ivanyu/life-scalajs">on Github</a>.
+                License is MIT.</p>
+        </div>
+
+        <form>
+            <div class="input-group">
+                <label for="input-interval">Speed, ms: </label>
+                <input type="number" id="input-interval" style="width: 6em" value="200">
+            </div>
+
+            <button type="button" class="btn btn-default btn-sm" id="btn-start-stop">
+                <span class="btn-label">Start</span>
+                <span class="glyphicon glyphicon-play btn-symbol" aria-hidden="true"></span>
+            </button>
+
+            <button type="button" class="btn btn-warning btn-sm" id="btn-clear">
+                <span class="btn-label">Clear</span>
+                <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+            </button>
+        </form>
+
+        <p style="text-align: center">
+            <canvas id="universe-view" width="650" height="650"></canvas>
+        </p>
+
+        <!--<div class="input-group" style="text-align: center">-->
+            <!--<h5>A brief history of Time</h5>-->
+            <!--<label for="">History of Time</label>-->
+        <!--</div>-->
+    </div>
+
+    <script type="text/javascript" src="./target/scala-2.11/life-scalajs-opt.js"></script>
+    <script type="text/javascript">
+        me.ivanyu.life.LifeJSApp().main();
+    </script>
+</body>
+</html>
