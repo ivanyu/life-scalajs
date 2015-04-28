@@ -1,7 +1,7 @@
 package me.ivanyu.life
 
 import org.scalajs.dom
-import rx._
+import rx.Var
 
 class ClearButton(val btnElement: dom.html.Button) {
   val clickStream = Var(false)

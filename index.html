@@ -4,8 +4,58 @@
     <meta charset="UTF-8">
     <title>Conway's Game of Life in ScalaJS</title>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+    <style>
+        div.inline-slider {
+            display: inline-block;
+            margin-left: 0.6em;
+            margin-right: 0.6em;
+        }
+
+        .ui-widget-content .ui-state-default {
+            border-color: #FBB636;
+            background: #FAC769;
+            width: 1em;
+        }
+
+        #slider-game-speed {
+            width: 12em;
+        }
+
+        #slider-zoom {
+            width: 9em;
+        }
+
+        #slider-volume {
+            width: 9em;
+        }
+
+        #span-volume {
+            display: inline-block;
+            width: 1.8em;
+        }
+
+        #span-mute {
+            cursor: pointer;
+        }
+
+        #universe {
+            display: inline-block;
+        }
+
+        #span-cell-coords {
+            font-family: Consolas, monospace;
+        }
+
+        #slider-history {
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
     <a href="https://github.com/ivanyu/life-scalajs">
@@ -18,37 +68,114 @@
             <p>This is a simple implementation of <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Conway's Game of Life</a>
                 simulator with <a href="http://www.scala-js.org/">ScalaJS</a> and <a href="https://github.com/lihaoyi/scala.rx">ScalaRx</a>.</p>
             <p>Created just for fun by <a href="http://ivanyu.me/">Ivan Yurchenko</a>.
-                Sources are <a href="https://github.com/ivanyu/life-scalajs">on Github</a>.
+                The code is <a href="https://github.com/ivanyu/life-scalajs">on Github</a>.
                 License is MIT.</p>
         </div>
 
-        <form>
-            <div class="input-group">
-                <label for="input-interval">Speed, ms: </label>
-                <input type="number" id="input-interval" style="width: 6em" value="200">
+        <div class="row" style="margin-bottom: 1em;">
+            <div class="col-xs-12">
+                <form>
+                    <div class="pull-left">
+                        <div id="control-game-speed">
+                            <label for="slider-game-speed">Speed: </label>
+                            <div id="slider-game-speed" class="inline-slider"></div>
+                            <span id="span-game-speed">6</span>
+                        </div>
+                        <div>
+                            <button id="btn-start-stop" type="button" class="btn btn-default btn-sm">
+                                <span class="btn-label">Start</span>
+                                <span class="glyphicon glyphicon-play btn-symbol" aria-hidden="true"></span>
+                            </button>
+
+                            <button id="btn-clear" type="button" class="btn btn-warning btn-sm">
+                                <span class="btn-label">Clear</span>
+                                <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pull-right">
+                        <table>
+                            <tr>
+                                <th><label for="slider-zoom">Zoom: </label></th>
+                                <td>
+                                    <div id="control-zoom">
+                                        <div id="slider-zoom" class="inline-slider"></div>
+                                        <span id="span-zoom">1.00×</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label for="slider-volume">Volume: </label></th>
+                                <td>
+                                    <div id="control-volume">
+                                        <div id="slider-volume" class="inline-slider"></div>
+                                        <div id="span-volume">20</div>
+                                    <span id="span-mute" class="glyphicon glyphicon-volume-up"
+                                          title="Mute sound"></span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </form>
             </div>
+        </div>
 
-            <button type="button" class="btn btn-default btn-sm" id="btn-start-stop">
-                <span class="btn-label">Start</span>
-                <span class="glyphicon glyphicon-play btn-symbol" aria-hidden="true"></span>
-            </button>
+        <div class="row">
+            <div class="col-xs-12" style="text-align: center">
+                <div id="universe">
+                    <canvas id="universe-view" width="650" height="650">
+                    </canvas>
+                    <br/>
+                    <span id="span-cell-coords" class="pull-right text-muted">
+                        <span id="span-cell-coord-row">0</span>×<span id="span-cell-coord-col">0</span>
+                    </span>
+                    <audio id="audio-click" autobuffer="autobuffer">
+                        <source src="data:audio/mp3;base64,//OAZAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAEAAAFMQAvLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy+mpqampqampqampqampqampqampqampqam+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+v////////////////////////////////8AAAA5TEFNRTMuOTlyAm4AAAAALF0AABRGJALMLgAARgAABTGFqXkNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/zgGQADt2FWSSglACOKALSW0EQApWpHCRAbyBgGON8A3+P1OfnP+hCEIQn/znOc5zv/qchCEIRpw4HBQhCEIz/QgcD4fD4fD4fOgcAMAwDAMAw+H3IHw+Hw+Hw+HzznOc5+d/IQhzn+hznOc5//Ic530IQPh8Ph8XD8A8PDw9//////mHh4e+OHh4e2245JZWig/EAIAmD74gD8P8uD/B9/lAffgmfU7wQBN6gQDHgn+D4PmvOf/lw////B8Pu//8TggGFip3bWcd4IlATc4D/8+BkCx95v0uMzOAAO7vGkvmPwACAB1rApIT3QADYTJjr4AFxjog1ZYSWq6TZkqA1LgWGBon/WElz6uhUXu3BkKpU9vq2e27LIRkCmNBVeLOzXoI5STalLxKZF8sNfdvS6X15RHpbKU9qG6ra+339b593ee///T9BRZTOsBVWYcXaY7Kb3NVvlUNS7v91/7wzL3GnUWYYa8ImsUBLFhWwOcvJtpc7VKw5ypTLbOv5lljyxe7+eG+9/kWEJnjVipJMzqAYMlzckTlBpahOBQrVaNZ01N3//HWX/vD72ev///+f//BcCsCoYjFYCh6CmUu4icra6jjSV+ZzGI93yrvYRYitrtOgCRGhDi3gQAKYAAAvxpaxNdTjuUWnGQBOECrVsfO1L1ZvtZW89ynGa///mNDGJfW3cnv/X/SWoCi1bU9yrS9tfhhlfkPJqA2lfrL8v3////6pm6tKcpxph91bkJuP/l3LGW6////1c4XdGBAIoISsIWVMgU+C9qaq8pa1686VeknqbuVBaz1ve8d5flz9a/0Ql6Cx3cbKvl+Ii+Sqy5XMLdBRZuOKC4+1O7ta1c3lTa1l9LWxw3Td7/6////9OUABQNjjvQ7FXCm1VTM9C0YCakqwqZT6ZLAlfMU/lruOWWWWs6uu0ussdxGc0229S0JAHzMbCrAYc/2Lp5PXKf9UIIrwjv//87BkFRuVvxgEzOQAHAtuWZGCaACl+EAA0WGbFD/+iktkGGVZa+3/5vbmwedG8KlVepj//6xR0RgCTSL16VSrO5///rlAgbmNOLkteY9W7V/KZpf////QNEJoCSVADmkmjKLTAAgNaAZTUgmU2Mv//////Mew2wzHAZAYZDAS8oYag6lUtmZUW7EYjOdyxmst6//////////MUBrzKYyFwlRwJAJf1ksSf6FRqrBVXf713/7v/3/6//////////9/b7sMRR6ebk2y2WQqTRmAkvpmW3vmot+62SoiUBBABgBAwAA/Et9/SW/5sSpt+YlEfSS/z5dLo7iW/8xLpKs5Ujq/+SJMOF8iKTHcd///Iw9wU4SovGJ5x9GSmbGVf///5JCBBvCelQwTokiUVD2Pl5I7/////ugTzMsJ50eockxQMi6O4OUPU4STGy5MQU1FMy45OS41qqqqqqqqqqqqqqqqqqqqqqqqqqqqqv/zEGQgAAABpADgAAAAAANIAcAAAKqqqqqq"/>
+                    </audio>
 
-            <button type="button" class="btn btn-warning btn-sm" id="btn-clear">
-                <span class="btn-label">Clear</span>
-                <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
-            </button>
-        </form>
+                    <audio id="audio-music" autobuffer="autobuffer">
+                        <source src="music_whiterat_teamicu.mp3" />
+                    </audio>
+                </div>
+            </div>
+        </div>
 
-        <p style="text-align: center">
-            <canvas id="universe-view" width="650" height="650"></canvas>
-        </p>
+        <div class="row">
+            <div id="control-history" class="col-xs-12">
+                <h4>A brief history of Time</h4>
+                <div id="slider-history"></div>
+                <div class="pull-right">
+                    Epoch: <span id="span-time-length">1</span>
+                </div>
+            </div>
+        </div>
 
-        <!--<div class="input-group" style="text-align: center">-->
-            <!--<h5>A brief history of Time</h5>-->
-            <!--<label for="">History of Time</label>-->
-        <!--</div>-->
+        <div class="row">
+            <div class="col-xs-12">
+                <h4>Information</h4>
+                <p>You can find more information about the game
+                    <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">in Wikipedia</a>.</p>
+                <p>The world in this implementation is toroidal - top and bottom, left and right edges are connected.</p>
+                <p>During the simulation, the history of the university evolution is recorded,
+                    and you can scroll to previous states when the simulation is stopped.
+                    Also when the simulation is stopped you can change the state by adding or removing living cells.
+                    However, the history will be cleared after this changes.</p>
+                <p>You can control the speed of the simulation and sound volume and zoom the cell plane
+                    by moving the sliders at the top.</p>
+            </div>
+        </div>
     </div>
 
+    <!--<footer class="footer">-->
+    <!--<div class="container">-->
+    <!--<p class="text-muted"></p>-->
+    <!--</div>-->
+    <!--</footer>-->
+
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
     <script type="text/javascript" src="./target/scala-2.11/life-scalajs-opt.js"></script>
     <script type="text/javascript">
         me.ivanyu.life.LifeJSApp().main();

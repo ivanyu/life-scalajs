@@ -6,7 +6,7 @@ class UniverseEvolutionSpec extends FunSuite with Matchers {
   /* Still */
   test("Empty") {
     val universe = Universe(10, 10)
-    universe.next._1 shouldBe universe
+    universe.nextState._1 shouldBe universe
   }
 
   test("Block") {
@@ -144,13 +144,13 @@ class UniverseEvolutionSpec extends FunSuite with Matchers {
   }
 
   private def testStill(u: Universe): Unit = {
-    u.next._1 shouldBe u
+    u.nextState._1 shouldBe u
   }
 
   private def testOscillatorPeriod2(u1: Universe, u2: Universe): Unit = {
-    u1.next._1 shouldBe u2
-    u1.next._1.next._1 shouldBe u1
-    u2.next._1 shouldBe u1
-    u2.next._1.next._1 shouldBe u2
+    u1.nextState._1 shouldBe u2
+    u1.nextState._1.nextState._1 shouldBe u1
+    u2.nextState._1 shouldBe u1
+    u2.nextState._1.nextState._1 shouldBe u2
   }
 }

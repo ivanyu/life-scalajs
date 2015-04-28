@@ -1,24 +1,20 @@
 package me.ivanyu.life.logic
 
-import me.ivanyu.life.logic.CellPlane.CellState
+import me.ivanyu.life.logic.CellPlane.{CellCoords, CellState}
 import scala.collection.mutable.ArrayBuffer
 
 sealed trait CellPlaneBase {
   val width: Int
   val height: Int
 
-  protected def lineCoord(x: Int, y: Int): Int = {
-    assert(x >= 0)
-    assert(x < width)
-    assert(y >= 0)
-    assert(y < height)
-    y * width + x
-  }
-
-  protected def planeCoords(i: Int): (Int, Int) = {
-    val x = i % width
-    val y = i / width
-    (x, y)
+  protected implicit class CellCoordsToPlaneCoords(cellCoords: CellCoords) {
+    def toPlaneCoords: Int = {
+      assert(cellCoords.col >= 0)
+      assert(cellCoords.col < width)
+      assert(cellCoords.row >= 0)
+      assert(cellCoords.row < height)
+      cellCoords.row * width + cellCoords.col
+    }
   }
 }
 
@@ -26,18 +22,18 @@ final class CellPlane private[logic]
     (val width: Int, val height: Int, val cells: Vector[CellState]) extends CellPlaneBase {
   import CellPlane._
 
-  def setAlive(x: Int, y: Int): CellPlane = {
-    val idx = lineCoord(x, y)
+  def setAlive(cellCoords: CellCoords): CellPlane = {
+    val idx = cellCoords.toPlaneCoords
     copy(cells.updated(idx, Alive))
   }
 
-  def setDead(x: Int, y: Int): CellPlane = {
-    val idx = lineCoord(x, y)
+  def setDead(cellCoords: CellCoords): CellPlane = {
+    val idx = cellCoords.toPlaneCoords
     copy(cells.updated(idx, Dead))
   }
 
-  def flip(x: Int, y: Int): CellPlane = {
-    val idx = lineCoord(x, y)
+  def flip(cellCoords: CellCoords): CellPlane = {
+    val idx = cellCoords.toPlaneCoords
     cells(idx) match {
       case Dead => copy(cells.updated(idx, Alive))
       case Alive => copy(cells.updated(idx, Dead))
@@ -49,37 +45,39 @@ final class CellPlane private[logic]
     CellPlane(width, height)
   }
 
-  def get(x: Int, y: Int): CellState = {
-    val idx = lineCoord(x, y)
+  def get(cellCoords: CellCoords): CellState = {
+    val idx = cellCoords.toPlaneCoords
     cells(idx)
   }
 
   private def copy(cells: Vector[CellState]): CellPlane =
     new CellPlane(width, height, cells)
 
-  def getNeighbours(x: Int, y: Int): Neighbours = {
-    val xLeft =
-      if (x > 0) x - 1
+  def getNeighbours(cellCoords: CellCoords): Neighbours = {
+    val CellCoords(col, row) = cellCoords
+
+    val colLeft =
+      if (col > 0) col - 1
       else width - 1
-    val xRight =
-      if (x < width - 1) x + 1
+    val colRight =
+      if (col < width - 1) col + 1
       else 0
-    val yUpper =
-      if (y > 0) y - 1
+    val rowUpper =
+      if (row > 0) row - 1
       else height - 1
-    val yLower =
-      if (y < height - 1) y + 1
+    val rowLower =
+      if (row < height - 1) row + 1
       else 0
 
     Neighbours(
-      Coords(xLeft, yUpper),
-      Coords(x, yUpper),
-      Coords(xRight, yUpper),
-      Coords(xRight, y),
-      Coords(xRight, yLower),
-      Coords(x, yLower),
-      Coords(xLeft, yLower),
-      Coords(xLeft, y))
+      CellCoords(colLeft, rowUpper),
+      CellCoords(col, rowUpper),
+      CellCoords(colRight, rowUpper),
+      CellCoords(colRight, row),
+      CellCoords(colRight, rowLower),
+      CellCoords(col, rowLower),
+      CellCoords(colLeft, rowLower),
+      CellCoords(colLeft, row))
   }
 
   override def hashCode(): Int = cells.hashCode()
@@ -95,12 +93,12 @@ object CellPlane {
   case object Alive extends CellState
   case object Unchanged extends CellState
 
-  case class Coords(x: Int, y: Int)
+  case class CellCoords(row: Int, col: Int)
 
-  case class Neighbours(upperLeft: Coords, upper: Coords,
-                        upperRight: Coords, right: Coords,
-                        lowerRight: Coords, lower: Coords,
-                        lowerLeft: Coords, left: Coords) {
+  case class Neighbours(upperLeft: CellCoords, upper: CellCoords,
+                        upperRight: CellCoords, right: CellCoords,
+                        lowerRight: CellCoords, lower: CellCoords,
+                        lowerLeft: CellCoords, left: CellCoords) {
     val neighbourList = List(
       upperLeft, upper, upperRight, right,
       lowerRight, lower, lowerLeft, left)
@@ -117,8 +115,8 @@ final class CellPlaneBuffer(val width: Int, val height: Int, val filler: CellSta
     extends CellPlaneBase {
   private val cells = ArrayBuffer.fill[CellState](width * height)(filler)
 
-  def update(x: Int, y: Int, state: CellState): Unit = {
-    cells(lineCoord(x, y)) = state
+  def update(cellCoords: CellCoords, state: CellState): Unit = {
+    cells(cellCoords.toPlaneCoords) = state
   }
 
   def build(): CellPlane = new CellPlane(width, height, cells.toVector)

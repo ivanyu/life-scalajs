@@ -6,46 +6,56 @@ final class Universe private(val cellPlane: CellPlane) extends CellPlaneContaine
   val width = cellPlane.width
   val height = cellPlane.height
 
-  def setAlive(x: Int, y: Int): Universe = {
-    copy(cellPlane.setAlive(x, y))
+  def setAlive(col: Int, row: Int): Universe = {
+    copy(cellPlane.setAlive(CellCoords(col, row)))
+  }
+  def setAlive(cellCoords: CellCoords): Universe = {
+    copy(cellPlane.setAlive(cellCoords))
   }
 
-  def setDead(x: Int, y: Int): Universe = {
-    copy(cellPlane.setDead(x, y))
+  def setDead(col: Int, row: Int): Universe = {
+    copy(cellPlane.setDead(CellCoords(col, row)))
+  }
+  def setDead(cellCoords: CellCoords): Universe = {
+    copy(cellPlane.setDead(cellCoords))
   }
 
-  def flip(x: Int, y: Int): Universe = {
-    copy(cellPlane.flip(x, y))
+  def flip(col: Int, row: Int): Universe = {
+    copy(cellPlane.flip(CellCoords(col, row)))
+  }
+  def flip(cellCoords: CellCoords): Universe = {
+    copy(cellPlane.flip(cellCoords))
   }
 
   def clear(): Universe = {
     copy(cellPlane.clear())
   }
 
-  def next: (Universe, Changes) = {
+  def nextState: (Universe, Changes) = {
     val buffer = CellPlaneBuffer(cellPlane.width, cellPlane.height, Dead)
     val changesBuffer = CellPlaneBuffer(cellPlane.width, cellPlane.height, Unchanged)
 
     for {
-      x <- Range(0, cellPlane.width)
-      y <- Range(0, cellPlane.height)
+      row <- Range(0, cellPlane.height)
+      col <- Range(0, cellPlane.width)
     } {
-      val aliveNeighbours = countAliveNeighbours(x, y)
-      (cellPlane.get(x, y): @unchecked) match {
+      val cellCoords = CellCoords(col, row)
+      val aliveNeighbours = countAliveNeighbours(cellCoords)
+      (cellPlane.get(cellCoords): @unchecked) match {
         case Dead =>
           if (aliveNeighbours == 3) {
-            buffer(x, y) = Alive
-            changesBuffer(x, y) = Alive
+            buffer(cellCoords) = Alive
+            changesBuffer(cellCoords) = Alive
           } else {
-            buffer(x, y) = Dead
+            buffer(cellCoords) = Dead
           }
 
         case Alive =>
           if (aliveNeighbours < 2 || aliveNeighbours > 3) {
-            buffer(x, y) = Dead
-            changesBuffer(x, y) = Dead
+            buffer(cellCoords) = Dead
+            changesBuffer(cellCoords) = Dead
           } else {
-            buffer(x, y) = Alive
+            buffer(cellCoords) = Alive
           }
       }
     }
@@ -55,10 +65,10 @@ final class Universe private(val cellPlane: CellPlane) extends CellPlaneContaine
 
   private def copy(cellPlane: CellPlane): Universe = new Universe(cellPlane)
 
-  private def countAliveNeighbours(x: Int, y: Int): Int = {
-    val neighbours = cellPlane.getNeighbours(x, y)
+  private def countAliveNeighbours(cellCoords: CellCoords): Int = {
+    val neighbours = cellPlane.getNeighbours(cellCoords)
     neighbours.neighbourList.count {
-      case Coords(xN, yN) => cellPlane.get(xN, yN) == Alive
+      case cellCoords: CellCoords => cellPlane.get(cellCoords) == Alive
     }
   }
 

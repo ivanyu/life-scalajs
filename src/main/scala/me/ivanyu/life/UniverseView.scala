@@ -1,104 +1,271 @@
 package me.ivanyu.life
 
+import me.ivanyu.life.VolumeControl.VolumeState
 import me.ivanyu.life.logic.{Changes, Universe}
 import org.scalajs.dom
-import org.scalajs.dom.html.Canvas
+import org.scalajs.jquery.jQuery
 import rx.Var
 import rx.core.Obs
 
-class UniverseView(val canvas: Canvas,
-                   val universeChangesStream: Var[Changes],
+class UniverseView(rootElement: dom.html.Div,
+                   running: Var[Boolean],
+                   universe: Var[Universe],
+                   universeChangesStream: Var[Changes],
+                   zoom: Var[Double], volume: Var[VolumeState],
                    val width: Int, val height: Int) {
   import logic.CellPlane._
 
-  canvas.onclick = canvasOnClick _
-  val clickStream = Var((0, 0))
+  private val GridColor = "#EBEBEB"
+  private val DeadColor = "#FFFFFF"
+  private val AliveColor = "#403E40"
+  private val CursorColor = "#C2BDAB"
+  private val CursorDownColor = "#636054"
 
-  private val context = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+  private val GridOffset = 0
+  private val CellBorderWidth = 1
+  private val CellSize = 16
 
-  private val gridOffset = 0
-  private val cellBorderWidth = 1
-  private val cellSize = 16
+  val cellPlaneClickStream = Var(CellCoords(-1, -1))
 
-  private val leftBorder = gridOffset
-  private val rightBorder = gridOffset + width * cellSize
-  private val topBorder = gridOffset
-  private val bottomBorder = gridOffset + height * cellSize
+  private val lastDrewCursor: Var[Option[CellCoords]] = Var(None)
+
+  // Elements
+  private val jqRoot = jQuery(rootElement)
+  private val canvas = jqRoot.children("#universe-view")(0).asInstanceOf[dom.html.Canvas]
+  private val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+
+  private val audioClick = jqRoot.children("#audio-click")(0).asInstanceOf[dom.html.Audio]
+  audioClick.volume = 0.2
+  private val audioMusic = jqRoot.children("#audio-music")(0).asInstanceOf[dom.html.Audio]
+  audioMusic.volume = 0.2
+
+  Obs(volume) {
+    audioClick.muted = volume().muted
+    audioClick.volume = volume().volume
+    audioMusic.muted = volume().muted
+    audioMusic.volume = volume().volume
+  }
+  
+  Obs(running) {
+    if (running()) {
+      audioMusic.play()
+    } else {
+      audioMusic.pause()
+    }
+  }
+
+  private val jqSpanCellCoords = jqRoot.children("#span-cell-coords")
+  private val jqSpanCellCoordRow = jqSpanCellCoords.children("#span-cell-coord-row")
+  private val jqSpanCellCoordCol = jqSpanCellCoords.children("#span-cell-coord-col")
+
+  private var leftBorder = 0
+  private var rightBorder = 0
+  private var topBorder = 0
+  private var bottomBorder = 0
+
+  Obs(zoom) {
+    leftBorder = GridOffset
+    rightBorder = (GridOffset + width * CellSize * zoom()).toInt
+    topBorder = GridOffset
+    bottomBorder = (GridOffset + height * CellSize * zoom()).toInt
+
+    canvas.width = Math.ceil(rightBorder - leftBorder).toInt + 1
+    canvas.height = Math.ceil(bottomBorder - topBorder).toInt + 1
+    ctx.scale(zoom(), zoom())
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.translate(0.5, 0.5)
+    drawGrid()
+    drawUniverse(universe())
+  }
 
   // Initialization
-  canvas.width = rightBorder - leftBorder + 1
-  canvas.height = bottomBorder - topBorder + 1
-  context.translate(0.5, 0.5)
-  drawGrid(width, height)
+  canvas.onclick = canvasOnClick _
+  canvas.onmousemove = canvasOnMouseMove _
+  canvas.onmouseleave = canvasOnMouseLeave _
+  canvas.onmousedown = canvasOnMouseDown _
+  canvas.onmouseup = canvasOnMouseUp _
 
   Obs(universeChangesStream, skipInitial = true) {
     drawChanges(universeChangesStream())
   }
 
-  def drawUniverse(universe: Universe): Unit = {
-    val changesFromBigBang = Changes(universe)
+  Obs(universe) {
+    drawUniverse(universe())
+  }
+
+  private def drawUniverse(u: Universe): Unit = {
+    val changesFromBigBang = Changes(u)
     drawChanges(changesFromBigBang)
   }
 
-  def drawChanges(changes: Changes): Unit = {
-    for (y <- Range(0, height)) {
-      for (x <- Range(0, width)) {
-        val cellStartX = gridOffset + x * cellSize
-        val cellStartY = gridOffset + y * cellSize
-        val cellCenterX = gridOffset + (x + 0.5) * cellSize
-        val cellCenterY = gridOffset + (y + 0.5) * cellSize
+  private def drawChanges(changes: Changes): Unit = {
+    clearLastDrewCursor()
+    lastDrewCursor() = None
 
-        (changes.get(x, y): @unchecked) match {
-          case Dead =>
-            context.fillStyle = "#FFFFFF"
-            context.beginPath()
-            context.fillRect(cellStartX + 1, cellStartY + 1, cellSize - 2, cellSize - 2)
-            context.fill()
-            context.strokeRect(cellStartX, cellStartY, cellSize, cellSize)
-
-          case Alive =>
-            context.fillStyle = "#403E40"
-            context.beginPath()
-            context.arc(cellCenterX, cellCenterY, cellSize * 0.4, 0, 2 * Math.PI)
-            context.fill()
-
-          case _ =>
-        }
+    for {
+      row <- Range(0, height)
+      col <- Range(0, width)
+    } {
+      changes.get(row, col) match {
+        case Dead => clearCell(CellCoords(col, row))
+        case Alive => drawAliveCell(CellCoords(col, row))
+        case _ =>
       }
     }
   }
 
-  private def drawGrid(width: Int, height: Int): Unit = {
-    context.strokeStyle = "#EBEBEB"
+  Obs(lastDrewCursor) {
+    // Print coordinates near the cell plane
+    lastDrewCursor() match {
+      case Some(CellCoords(row, col)) =>
+        jqSpanCellCoords.removeClass("invisible")
+        jqSpanCellCoordRow.text(row.toString)
+        jqSpanCellCoordCol.text(col.toString)
 
-    context.lineWidth = cellBorderWidth
+      case None =>
+        jqSpanCellCoords.addClass("invisible")
+        jqSpanCellCoordRow.text("-1")
+        jqSpanCellCoordCol.text("-1")
+    }
+  }
 
-    val horizontalLineLength = width * cellSize
-    val verticalLineLength = height * cellSize
+  private def drawGrid(): Unit = {
+    ctx.strokeStyle = GridColor
+    ctx.lineWidth = CellBorderWidth
+
+    val horizontalLineLength = width * CellSize
+    val verticalLineLength = height * CellSize
 
     for (i <- Range(0, width + 1)) {
-      context.moveTo(gridOffset + i * cellSize, gridOffset)
-      context.lineTo(gridOffset + i * cellSize, gridOffset + horizontalLineLength)
+      ctx.moveTo(GridOffset + i * CellSize, GridOffset)
+      ctx.lineTo(GridOffset + i * CellSize, GridOffset + horizontalLineLength)
     }
 
     for (i <- Range(0, height + 1)) {
-      context.moveTo(gridOffset, gridOffset + i * cellSize)
-      context.lineTo(gridOffset + verticalLineLength, gridOffset + i * cellSize)
+      ctx.moveTo(GridOffset, GridOffset + i * CellSize)
+      ctx.lineTo(GridOffset + verticalLineLength, GridOffset + i * CellSize)
     }
 
-    context.stroke()
+    ctx.stroke()
   }
 
   private def canvasOnClick(e: dom.MouseEvent): Unit = {
-    val x = e.pageX - canvas.offsetLeft
-    val y = e.pageY - canvas.offsetTop
-    if (x >= leftBorder && x < rightBorder &&
-        y >= topBorder && y < bottomBorder) {
+    clientCoordsToCellCoordsOption(e.clientX, e.clientY) match {
+      case Some(cellCoords) if !running() =>
+        audioClick.play()
+        cellPlaneClickStream() = cellCoords
+      case _ =>
+    }
+  }
 
-      val cellX = Math.floor((x - leftBorder) / cellSize)
-      val cellY = Math.floor((y - topBorder) / cellSize)
+  private def canvasOnMouseMove(e: dom.MouseEvent): Unit = {
+    clientCoordsToCellCoordsOption(e.clientX, e.clientY) match {
+      case Some(cellCoords) if !running() =>
+        drawCursor(cellCoords, mouseDown = false)
 
-      clickStream() = (cellX.toInt, cellY.toInt)
+        // Clear the previous drew cursor if it isn't the same as the current
+        lastDrewCursor() match {
+          case Some(lastCursorCellCoords) if lastCursorCellCoords != cellCoords =>
+            clearLastDrewCursor()
+          case _ =>
+        }
+
+        lastDrewCursor() = Some(cellCoords)
+
+      case _ =>
+    }
+  }
+
+  private def canvasOnMouseDown(e: dom.MouseEvent): Unit = {
+    lastDrewCursor() match {
+      case Some(coord) if !running() =>
+        // Expand cursor circle
+        drawCursor(coord, mouseDown = true)
+    }
+  }
+
+  private def canvasOnMouseUp(e: dom.MouseEvent): Unit = {
+    lastDrewCursor() match {
+      case Some(coord) if !running() =>
+        // Shrink cursor circle
+        clearLastDrewCursor()
+        drawCursor(coord, mouseDown = false)
+      case _ =>
+    }
+  }
+
+  private def canvasOnMouseLeave(e: dom.MouseEvent): Unit = {
+    if (!running()) {
+      clearLastDrewCursor()
+    }
+    lastDrewCursor() = None
+  }
+
+  private def clearLastDrewCursor(): Unit = {
+    lastDrewCursor() match {
+      case Some(coord) =>
+        clearCell(coord)
+
+        universe().get(coord) match {
+          case Dead => clearCell(coord)
+          case Alive => drawAliveCell(coord)
+          case _ =>
+        }
+
+      case _ =>
+    }
+  }
+
+  private def drawAliveCell(cellCoords: CellCoords): Unit = {
+    val (cellCenterX, cellCenterY) = cellCoords.cellCenter
+    ctx.fillStyle = AliveColor
+    ctx.beginPath()
+    ctx.arc(cellCenterX, cellCenterY, CellSize * 0.4, 0, 2 * Math.PI)
+    ctx.fill()
+  }
+
+  private def drawCursor(cellCoords: CellCoords, mouseDown: Boolean): Unit = {
+    val (cellCenterX, cellCenterY) = cellCoords.cellCenter
+    ctx.fillStyle = if (mouseDown) { CursorDownColor } else { CursorColor }
+    val cursorSize = if (mouseDown) { CellSize * 0.3 } else { CellSize * 0.2 }
+    ctx.beginPath()
+    ctx.arc(cellCenterX, cellCenterY, cursorSize, 0, 2 * Math.PI)
+    ctx.fill()
+  }
+
+  private def clearCell(cellCoords: CellCoords): Unit = {
+    val (cornerX, cornerY) = cellCoords.topLeftCorner
+    ctx.fillStyle = DeadColor
+    ctx.beginPath()
+    ctx.fillRect(cornerX + 1, cornerY + 1, CellSize - 2, CellSize - 2)
+    ctx.fill()
+    ctx.strokeRect(cornerX, cornerY, CellSize, CellSize)
+  }
+
+
+  private def clientCoordsToCellCoordsOption(clientX: Double, clientY: Double): Option[CellCoords] = {
+    val clientRect = canvas.getBoundingClientRect()
+    val x = clientX - clientRect.left
+    val y = clientY - clientRect.top
+    if (x >= leftBorder && x < rightBorder && y >= topBorder && y < bottomBorder) {
+      val row = Math.floor((y - topBorder)  / zoom() / CellSize).toInt
+      val col = Math.floor((x - leftBorder) / zoom() / CellSize).toInt
+      Some(CellCoords(row, col))
+    } else {
+      None
+    }
+  }
+
+  private implicit class CellCoordsToPixelCoords(cellCoords: CellCoords) {
+    def topLeftCorner: (Double, Double) = {
+      (GridOffset + cellCoords.col * CellSize,
+       GridOffset + cellCoords.row * CellSize)
+    }
+
+    def cellCenter: (Double, Double) = {
+      (GridOffset + (cellCoords.col + 0.5) * CellSize,
+       GridOffset + (cellCoords.row + 0.5) * CellSize)
     }
   }
 }
