@@ -1,4 +1,4 @@
-package me.ivanyu.life
+package me.ivanyu.life.controls
 
 import org.scalajs.dom
 import org.scalajs.jquery.{JQueryEventObject, jQuery}

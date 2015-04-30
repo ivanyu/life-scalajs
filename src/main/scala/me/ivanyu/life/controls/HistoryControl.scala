@@ -1,4 +1,4 @@
-package me.ivanyu.life
+package me.ivanyu.life.controls
 
 import me.ivanyu.life.LifeJSApp.UniverseWithEpoch
 import org.scalajs.dom

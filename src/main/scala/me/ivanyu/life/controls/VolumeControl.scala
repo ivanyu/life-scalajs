@@ -1,6 +1,6 @@
-package me.ivanyu.life
+package me.ivanyu.life.controls
 
-import me.ivanyu.life.VolumeControl.VolumeState
+import me.ivanyu.life.controls.VolumeControl.VolumeState
 import org.scalajs.dom
 import org.scalajs.jquery.{JQueryEventObject, jQuery}
 import rx.core.Var

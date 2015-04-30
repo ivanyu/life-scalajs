@@ -1,6 +1,7 @@
-package me.ivanyu.life
+package me.ivanyu.life.controls
 
-import me.ivanyu.life.VolumeControl.VolumeState
+import me.ivanyu.life.controls.VolumeControl.VolumeState
+import me.ivanyu.life.logic
 import me.ivanyu.life.logic.{Changes, Universe}
 import org.scalajs.dom
 import org.scalajs.jquery.jQuery

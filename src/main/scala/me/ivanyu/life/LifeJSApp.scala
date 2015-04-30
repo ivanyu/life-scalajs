@@ -1,5 +1,6 @@
 package me.ivanyu.life
 
+import me.ivanyu.life.controls._
 import me.ivanyu.life.logic.{Changes, Universe}
 import org.scalajs.dom
 import org.scalajs.dom.html.{Button, Div}
