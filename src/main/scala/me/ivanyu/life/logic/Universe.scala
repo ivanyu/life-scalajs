@@ -1,8 +1,10 @@
 package me.ivanyu.life.logic
 
-final class Universe private(val cellPlane: CellPlane) extends CellPlaneContainer {
-  import CellPlane._
+import CellPlane._
 
+import scala.util.Random
+
+final class Universe private(val cellPlane: CellPlane) extends CellPlaneContainer {
   val width = cellPlane.width
   val height = cellPlane.height
 
@@ -80,11 +82,27 @@ final class Universe private(val cellPlane: CellPlane) extends CellPlaneContaine
 }
 
 object Universe {
-
   def apply(width: Int, height: Int): Universe = {
     assert(width > 0)
     assert(height > 0)
     new Universe(CellPlane(width, height))
+  }
+
+  def random(width: Int, height: Int): Universe = {
+    assert(width > 0)
+    assert(height > 0)
+    val cellPlaneBuffer = CellPlaneBuffer(width, height, CellPlane.Dead)
+
+    for {
+      row <- Range(0, height)
+      col <- Range(0, width)
+    } {
+      if (Random.nextInt(4) == 1) {
+        cellPlaneBuffer(CellCoords(row, col)) = CellPlane.Alive
+      }
+    }
+
+    new Universe(cellPlaneBuffer.build())
   }
 }
 

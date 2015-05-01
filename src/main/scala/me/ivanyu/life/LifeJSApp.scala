@@ -61,12 +61,14 @@ object LifeJSApp extends JSApp {
       dom.document.getElementById("btn-start-stop").asInstanceOf[dom.html.Button],
       running)
 
-    val clearButton = new ClearButton(
+    val clearButton = new controls.Button(
       dom.document.getElementById("btn-clear").asInstanceOf[Button])
+    val randomUniverseButton = new controls.Button(
+      dom.document.getElementById("btn-random").asInstanceOf[Button])
 
     val historyControl = new HistoryControl(
       dom.document.getElementById("control-history").asInstanceOf[Div],
-      historyOfTime, running)
+      historyOfTime, running, volumeControl.changesStream)
 
     def setTimeoutOnNextUniverse(): SetTimeoutHandle = {
       val interval = speedToDuration(gameSpeedControl.changesStream())
@@ -92,10 +94,19 @@ object LifeJSApp extends JSApp {
 
     // On "Clear" button, drop the history and clear the universe
     Obs(clearButton.clickStream, skipInitial = true) {
+      startNewHistory(universe().clear())
+    }
+
+    // On "Random universe" button, drop the history and generate new random universe
+    Obs(randomUniverseButton.clickStream, skipInitial = true) {
+      startNewHistory(Universe.random(size, size))
+    }
+
+    def startNewHistory(u: Universe): Unit = {
       running() = false
-      universe() = universe().clear()
+      universe() = u
       currentEpoch() = 1
-      historyOfTime() = List(UniverseWithEpoch(universe(), currentEpoch()))
+      historyOfTime() = List(UniverseWithEpoch(u, currentEpoch()))
     }
 
     // On clicking in cell plane if running, drop the history and modify the universe

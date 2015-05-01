@@ -91,6 +91,11 @@
                                 <span class="btn-label">Clear</span>
                                 <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
                             </button>
+
+                            <button id="btn-random" type="button" class="btn btn-warning btn-sm">
+                                <span class="btn-label">Random universe</span>
+                                <span class="glyphicon glyphicon-random" aria-hidden="true"></span>
+                            </button>
                         </div>
                     </div>
 
@@ -135,7 +140,7 @@
                         <source src="data:audio/mp3;base64,//OAZAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAEAAAFMQAvLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy+mpqampqampqampqampqampqampqampqam+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+v////////////////////////////////8AAAA5TEFNRTMuOTlyAm4AAAAALF0AABRGJALMLgAARgAABTGFqXkNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/zgGQADt2FWSSglACOKALSW0EQApWpHCRAbyBgGON8A3+P1OfnP+hCEIQn/znOc5zv/qchCEIRpw4HBQhCEIz/QgcD4fD4fD4fOgcAMAwDAMAw+H3IHw+Hw+Hw+HzznOc5+d/IQhzn+hznOc5//Ic530IQPh8Ph8XD8A8PDw9//////mHh4e+OHh4e2245JZWig/EAIAmD74gD8P8uD/B9/lAffgmfU7wQBN6gQDHgn+D4PmvOf/lw////B8Pu//8TggGFip3bWcd4IlATc4D/8+BkCx95v0uMzOAAO7vGkvmPwACAB1rApIT3QADYTJjr4AFxjog1ZYSWq6TZkqA1LgWGBon/WElz6uhUXu3BkKpU9vq2e27LIRkCmNBVeLOzXoI5STalLxKZF8sNfdvS6X15RHpbKU9qG6ra+339b593ee///T9BRZTOsBVWYcXaY7Kb3NVvlUNS7v91/7wzL3GnUWYYa8ImsUBLFhWwOcvJtpc7VKw5ypTLbOv5lljyxe7+eG+9/kWEJnjVipJMzqAYMlzckTlBpahOBQrVaNZ01N3//HWX/vD72ev///+f//BcCsCoYjFYCh6CmUu4icra6jjSV+ZzGI93yrvYRYitrtOgCRGhDi3gQAKYAAAvxpaxNdTjuUWnGQBOECrVsfO1L1ZvtZW89ynGa///mNDGJfW3cnv/X/SWoCi1bU9yrS9tfhhlfkPJqA2lfrL8v3////6pm6tKcpxph91bkJuP/l3LGW6////1c4XdGBAIoISsIWVMgU+C9qaq8pa1686VeknqbuVBaz1ve8d5flz9a/0Ql6Cx3cbKvl+Ii+Sqy5XMLdBRZuOKC4+1O7ta1c3lTa1l9LWxw3Td7/6////9OUABQNjjvQ7FXCm1VTM9C0YCakqwqZT6ZLAlfMU/lruOWWWWs6uu0ussdxGc0229S0JAHzMbCrAYc/2Lp5PXKf9UIIrwjv//87BkFRuVvxgEzOQAHAtuWZGCaACl+EAA0WGbFD/+iktkGGVZa+3/5vbmwedG8KlVepj//6xR0RgCTSL16VSrO5///rlAgbmNOLkteY9W7V/KZpf////QNEJoCSVADmkmjKLTAAgNaAZTUgmU2Mv//////Mew2wzHAZAYZDAS8oYag6lUtmZUW7EYjOdyxmst6//////////MUBrzKYyFwlRwJAJf1ksSf6FRqrBVXf713/7v/3/6//////////9/b7sMRR6ebk2y2WQqTRmAkvpmW3vmot+62SoiUBBABgBAwAA/Et9/SW/5sSpt+YlEfSS/z5dLo7iW/8xLpKs5Ujq/+SJMOF8iKTHcd///Iw9wU4SovGJ5x9GSmbGVf///5JCBBvCelQwTokiUVD2Pl5I7/////ugTzMsJ50eockxQMi6O4OUPU4STGy5MQU1FMy45OS41qqqqqqqqqqqqqqqqqqqqqqqqqqqqqv/zEGQgAAABpADgAAAAAANIAcAAAKqqqqqq"/>
                     </audio>
 
-                    <audio id="audio-music" autobuffer="autobuffer">
+                    <audio id="audio-music" loop autobuffer="autobuffer">
                         <source src="music_whiterat_teamicu.mp3" />
                     </audio>
                 </div>
@@ -149,6 +154,10 @@
                 <div class="pull-right">
                     Epoch: <span id="span-time-length">1</span>
                 </div>
+
+                <audio id="audio-time" autobuffer="autobuffer">
+                    <source src="time.mp3" />
+                </audio>
             </div>
         </div>
 
@@ -164,6 +173,8 @@
                     However, the history will be cleared after this changes.</p>
                 <p>You can control the speed of the simulation and sound volume and zoom the cell plane
                     by moving the sliders at the top.</p>
+                <p>Unfortunately, the history is unbounded now and may consume lots of memory with time.</p>
+                <p>Music by Whiterat(TeamICU).</p>
             </div>
         </div>
     </div>
