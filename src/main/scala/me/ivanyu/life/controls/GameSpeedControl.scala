@@ -9,7 +9,7 @@ import scala.scalajs.js
 class GameSpeedControl(rootElement: dom.html.Div) {
   private val jqRoot = jQuery(rootElement)
   val jqSlider = new JQueryUISlider(jqRoot.children("#slider-game-speed"))
-  jqSlider.init(1, 8, 6)
+  jqSlider.init(1, 8, 6, animate = true)
   val jqSpanGameSpeed = jqRoot.children("#span-game-speed")
 
   val changesStream = Var(jqSlider.sliderValue)

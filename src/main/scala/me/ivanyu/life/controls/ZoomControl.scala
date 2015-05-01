@@ -9,7 +9,7 @@ import scala.scalajs.js
 class ZoomControl(rootElement: dom.html.Div) {
   private val jqRoot = jQuery(rootElement)
   private val jqSlider = new JQueryUISlider(jqRoot.children("#slider-zoom"))
-  jqSlider.init(1, 7, 3)
+  jqSlider.init(1, 7, 3, animate = true)
 
   private val jqSpanZoom = jqRoot.children("#span-zoom")
 

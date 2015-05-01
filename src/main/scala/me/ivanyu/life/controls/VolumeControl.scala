@@ -10,7 +10,7 @@ import scala.scalajs.js
 class VolumeControl(rootElement: dom.html.Div) {
   private val jqRoot = jQuery(rootElement)
   private val jqSlider = new JQueryUISlider(jqRoot.children("#slider-volume"))
-  jqSlider.init(0, 100, 20)
+  jqSlider.init(0, 100, 20, animate = true)
 
   private var muted = false
 

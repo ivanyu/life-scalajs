@@ -7,13 +7,17 @@ import scala.scalajs.js
 class JQueryUISlider(slider: JQuery) {
   private val dyn = slider.asInstanceOf[js.Dynamic]
 
-  def init(min: Int, max: Int, value: Int, disabled: Boolean = false): Unit = {
-    dyn.slider(js.Dynamic.literal(
+  def init(min: Int, max: Int, value: Int, animate: Boolean, disabled: Boolean = false): Unit = {
+    val options = js.Dynamic.literal(
       "min" -> min,
       "max" -> max,
       "value" -> value,
       "disabled" -> disabled
-    ))
+    )
+    if (animate) {
+      options.updateDynamic("animate")("fast")
+    }
+    dyn.slider(options)
   }
 
   def max: Int = dyn.slider("option", "max").asInstanceOf[Int]

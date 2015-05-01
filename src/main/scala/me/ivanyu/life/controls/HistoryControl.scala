@@ -15,7 +15,7 @@ class HistoryControl(rootElement: dom.html.Div,
                      volume: Var[VolumeState]) {
   private val jqRoot = jQuery(rootElement)
   val jqSlider = new JQueryUISlider(jqRoot.children("#slider-history"))
-  jqSlider.init(1, 0, 0, disabled = true)
+  jqSlider.init(1, 0, 0, animate = true, disabled = true)
   private val jqSpanTimeLength = jqRoot.find("#span-time-length")
 
   private val audioTime = jqRoot.children("#audio-time")(0).asInstanceOf[dom.html.Audio]
