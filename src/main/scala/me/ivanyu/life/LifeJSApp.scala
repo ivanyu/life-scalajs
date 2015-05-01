@@ -1,5 +1,6 @@
 package me.ivanyu.life
 
+import me.ivanyu.life.controls.NewUniverseModal.NewUniverseParams
 import me.ivanyu.life.controls._
 import me.ivanyu.life.logic.{Changes, Universe}
 import org.scalajs.dom
@@ -17,8 +18,8 @@ object LifeJSApp extends JSApp {
   def main(): Unit = {
     val running = Var(false)
 
-    val size = 35
-    val universe = Var(Universe(size, size)
+    val universeSize = Var(35)
+    val universe = Var(Universe(universeSize(), universeSize())
       // Left glider
       .setAlive(0, 1)
       .setAlive(1, 2)
@@ -42,6 +43,19 @@ object LifeJSApp extends JSApp {
     }
 
     // Controls
+    val clearButton = new controls.Button(
+      dom.document.getElementById("btn-clear").asInstanceOf[Button])
+    val randomSeedButton = new controls.Button(
+      dom.document.getElementById("btn-random").asInstanceOf[Button])
+
+    val newUniverseModal = new NewUniverseModal(
+      dom.document.getElementById("modal-new-universe").asInstanceOf[Div],
+      universeSize)
+
+    val startStopButton = new StartStopButton(
+      dom.document.getElementById("btn-start-stop").asInstanceOf[dom.html.Button],
+      running)
+
     val gameSpeedControl = new GameSpeedControl(
       dom.document.getElementById("control-game-speed").asInstanceOf[dom.html.Div])
 
@@ -54,21 +68,12 @@ object LifeJSApp extends JSApp {
     val universeView = new UniverseView(
       dom.document.getElementById("universe").asInstanceOf[dom.html.Div],
       running, universe, universeChangesStream,
-      zoomControl.changesStream, volumeControl.changesStream,
-      size, size)
-
-    val startStopButton = new StartStopButton(
-      dom.document.getElementById("btn-start-stop").asInstanceOf[dom.html.Button],
-      running)
-
-    val clearButton = new controls.Button(
-      dom.document.getElementById("btn-clear").asInstanceOf[Button])
-    val randomUniverseButton = new controls.Button(
-      dom.document.getElementById("btn-random").asInstanceOf[Button])
+      zoomControl.zoom, volumeControl.volume)
 
     val historyControl = new HistoryControl(
       dom.document.getElementById("control-history").asInstanceOf[Div],
-      historyOfTime, running, volumeControl.changesStream)
+      historyOfTime, running, volumeControl.volume)
+
 
     def setTimeoutOnNextUniverse(): SetTimeoutHandle = {
       val interval = speedToDuration(gameSpeedControl.changesStream())
@@ -88,18 +93,31 @@ object LifeJSApp extends JSApp {
 
     val timeout = setTimeoutOnNextUniverse()
 
-    Obs(startStopButton.clickStream, skipInitial = true) {
-      running() = !running()
-    }
-
     // On "Clear" button, drop the history and clear the universe
     Obs(clearButton.clickStream, skipInitial = true) {
       startNewHistory(universe().clear())
     }
 
-    // On "Random universe" button, drop the history and generate new random universe
-    Obs(randomUniverseButton.clickStream, skipInitial = true) {
-      startNewHistory(Universe.random(size, size))
+    // On "Random seed" button, drop the history and generate new random universe
+    Obs(randomSeedButton.clickStream, skipInitial = true) {
+      startNewHistory(Universe.random(universeSize(), universeSize()))
+    }
+
+    Obs(newUniverseModal.newUniverseParamsStream, skipInitial = true) {
+      val NewUniverseParams(size, randomSeed) = newUniverseModal.newUniverseParamsStream()
+
+      universeSize() = size
+      val newUniverse =
+        if (randomSeed) {
+          Universe.random(size, size)
+        } else {
+          Universe(size, size)
+        }
+      startNewHistory(newUniverse)
+    }
+
+    Obs(startStopButton.clickStream, skipInitial = true) {
+      running() = !running()
     }
 
     def startNewHistory(u: Universe): Unit = {

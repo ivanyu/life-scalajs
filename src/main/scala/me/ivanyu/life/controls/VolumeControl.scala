@@ -14,7 +14,7 @@ class VolumeControl(rootElement: dom.html.Div) {
 
   private var muted = false
 
-  val changesStream: Var[VolumeState] =
+  val volume: Var[VolumeState] =
     Var(VolumeState(volumeValue(jqSlider.sliderValue), muted = muted))
 
   val jqSpanVolume = jQuery(jqRoot.children("#span-volume"))
@@ -23,7 +23,7 @@ class VolumeControl(rootElement: dom.html.Div) {
   jqSlider.onSlide((e: JQueryEventObject, ui: js.Dynamic) => {
     val sliderValue = ui.value.asInstanceOf[Int]
     jqSpanVolume.text(sliderValue.toString)
-    changesStream() = VolumeState(volumeValue(sliderValue), muted = muted)
+    volume() = VolumeState(volumeValue(sliderValue), muted = muted)
     true.asInstanceOf[js.Any]
   })
 
@@ -40,7 +40,7 @@ class VolumeControl(rootElement: dom.html.Div) {
       jqSpanVolume.removeClass("text-muted")
     }
 
-    changesStream() = VolumeState(volumeValue(jqSlider.sliderValue), muted = muted)
+    volume() = VolumeState(volumeValue(jqSlider.sliderValue), muted = muted)
   })
 
   private def volumeValue(sliderValue: Int): Double = sliderValue / 100.0

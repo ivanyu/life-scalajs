@@ -12,8 +12,7 @@ class UniverseView(rootElement: dom.html.Div,
                    running: Var[Boolean],
                    universe: Var[Universe],
                    universeChangesStream: Var[Changes],
-                   zoom: Var[Double], volume: Var[VolumeState],
-                   val width: Int, val height: Int) {
+                   zoom: Var[Double], volume: Var[VolumeState]) {
   import logic.CellPlane._
 
   private val GridColor = "#EBEBEB"
@@ -59,22 +58,33 @@ class UniverseView(rootElement: dom.html.Div,
   private val jqSpanCellCoordRow = jqSpanCellCoords.children("#span-cell-coord-row")
   private val jqSpanCellCoordCol = jqSpanCellCoords.children("#span-cell-coord-col")
 
+  private var width: Int = 0
+  private var height: Int = 0
+
   private var leftBorder = 0
   private var rightBorder = 0
   private var topBorder = 0
   private var bottomBorder = 0
 
   Obs(zoom) {
+    init()
+  }
+
+  private def init(): Unit = {
+    width = universe().width
+    height = universe().height
+
     leftBorder = GridOffset
     rightBorder = (GridOffset + width * CellSize * zoom()).toInt
     topBorder = GridOffset
     bottomBorder = (GridOffset + height * CellSize * zoom()).toInt
 
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
     canvas.width = Math.ceil(rightBorder - leftBorder).toInt + 1
     canvas.height = Math.ceil(bottomBorder - topBorder).toInt + 1
     ctx.scale(zoom(), zoom())
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.translate(0.5, 0.5)
     drawGrid()
     drawUniverse(universe())
@@ -96,6 +106,10 @@ class UniverseView(rootElement: dom.html.Div,
   }
 
   private def drawUniverse(u: Universe): Unit = {
+    if (u.width != width || u.height != height) {
+      init()
+    }
+
     val changesFromBigBang = Changes(u)
     drawChanges(changesFromBigBang)
   }

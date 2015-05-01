@@ -13,12 +13,12 @@ class ZoomControl(rootElement: dom.html.Div) {
 
   private val jqSpanZoom = jqRoot.children("#span-zoom")
 
-  val changesStream = Var(getZoom(jqSlider.sliderValue))
+  val zoom = Var(getZoom(jqSlider.sliderValue))
 
   jqSlider.onSlide((e: JQueryEventObject, ui: js.Dynamic) => {
-    val zoom = getZoom(ui.value.asInstanceOf[Int])
-    jqSpanZoom.text(String.format("%0.2f×", java.lang.Double.valueOf(zoom)))
-    changesStream() = zoom
+    val zoomValue = getZoom(ui.value.asInstanceOf[Int])
+    jqSpanZoom.text(String.format("%0.2f×", java.lang.Double.valueOf(zoomValue)))
+    zoom() = zoomValue
     true.asInstanceOf[js.Any]
   })
 
