@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <title>Conway's Game of Life in ScalaJS</title>
 
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
 
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
     <style>
         div.inline-slider {
@@ -23,16 +23,24 @@
             width: 1em;
         }
 
+        .ui-slider, .ui-slider .ui-slider-handle {
+            cursor: pointer;
+        }
+
+        #slider-new-universe-size {
+            width: 11.5em;
+        }
+
         #slider-game-speed {
             width: 12em;
         }
 
         #slider-zoom {
-            width: 9em;
+            width: 12em;
         }
 
         #slider-volume {
-            width: 9em;
+            width: 12em;
         }
 
         #span-volume {
@@ -58,6 +66,38 @@
     </style>
 </head>
 <body>
+    <div id="modal-new-universe" class="modal fade bs-example-modal-sm"
+         tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close"
+                            data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Create a new universe</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label for="slider-new-universe-size">Size: </label>
+                        <div id="slider-new-universe-size" class="inline-slider"></div>
+                        <span id="span-new-universe-size">35</span>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input id="cb-new-universe-random-seed" type="checkbox" checked> Seed randomly
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button id="btn-create-universe" type="button" class="btn btn-primary">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <a href="https://github.com/ivanyu/life-scalajs">
         <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png">
     </a>
@@ -73,52 +113,66 @@
         </div>
 
         <div class="row" style="margin-bottom: 1em;">
-            <div class="col-xs-12">
-                <form>
-                    <div class="pull-left">
-                        <div id="control-game-speed">
-                            <label for="slider-game-speed">Speed: </label>
-                            <div id="slider-game-speed" class="inline-slider"></div>
-                            <span id="span-game-speed">6</span>
-                        </div>
-                        <div>
-                            <button id="btn-start-stop" type="button" class="btn btn-default btn-sm">
-                                <span class="btn-label">Start</span>
-                                <span class="glyphicon glyphicon-play btn-symbol" aria-hidden="true"></span>
-                            </button>
+            <div class="col-xs-6">
+                <div class="pull-left">
+                    <button id="btn-clear" type="button" class="btn btn-warning btn-sm">
+                        <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+                        <span class="btn-label">Clear</span>
+                    </button>
 
-                            <button id="btn-clear" type="button" class="btn btn-warning btn-sm">
-                                <span class="btn-label">Clear</span>
-                                <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
-                            </button>
-                        </div>
-                    </div>
+                    <button id="btn-random" type="button" class="btn btn-warning btn-sm">
+                        <span class="glyphicon glyphicon-random" aria-hidden="true"></span>
+                        <span class="btn-label">Random seed</span>
+                    </button>
 
-                    <div class="pull-right">
-                        <table>
-                            <tr>
-                                <th><label for="slider-zoom">Zoom: </label></th>
-                                <td>
-                                    <div id="control-zoom">
-                                        <div id="slider-zoom" class="inline-slider"></div>
-                                        <span id="span-zoom">1.00×</span>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th><label for="slider-volume">Volume: </label></th>
-                                <td>
-                                    <div id="control-volume">
-                                        <div id="slider-volume" class="inline-slider"></div>
-                                        <div id="span-volume">20</div>
-                                    <span id="span-mute" class="glyphicon glyphicon-volume-up"
-                                          title="Mute sound"></span>
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </form>
+                    <button class="btn btn-success btn-sm"
+                            type="button"
+                            data-toggle="modal"
+                            data-target="#modal-new-universe">
+                        <span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span>
+                        <span class="btn-label">New universe</span>
+                    </button>
+
+                    <br/>
+                    <button id="btn-start-stop" type="button" class="btn btn-default btn-sm" style="margin-top: 4px;">
+                        <span class="glyphicon glyphicon-play btn-symbol" aria-hidden="true"></span>
+                        <span class="btn-label">Start</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-xs-6">
+                <table class="pull-right">
+                    <tr>
+                        <th><label for="slider-game-speed">Speed: </label></th>
+                        <td>
+                            <div id="control-game-speed">
+                                <div id="slider-game-speed" class="inline-slider"></div>
+                                <span id="span-game-speed">6</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="slider-zoom">Zoom: </label></th>
+                        <td>
+                            <div id="control-zoom">
+                                <div id="slider-zoom" class="inline-slider"></div>
+                                <span id="span-zoom">1.00×</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="slider-volume">Volume: </label></th>
+                        <td>
+                            <div id="control-volume">
+                                <div id="slider-volume" class="inline-slider"></div>
+                                <div id="span-volume">20</div>
+                                <span id="span-mute" class="glyphicon glyphicon-volume-up"
+                                      title="Mute sound"></span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
 
@@ -135,7 +189,7 @@
                         <source src="data:audio/mp3;base64,//OAZAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAEAAAFMQAvLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy+mpqampqampqampqampqampqampqampqam+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+v////////////////////////////////8AAAA5TEFNRTMuOTlyAm4AAAAALF0AABRGJALMLgAARgAABTGFqXkNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/zgGQADt2FWSSglACOKALSW0EQApWpHCRAbyBgGON8A3+P1OfnP+hCEIQn/znOc5zv/qchCEIRpw4HBQhCEIz/QgcD4fD4fD4fOgcAMAwDAMAw+H3IHw+Hw+Hw+HzznOc5+d/IQhzn+hznOc5//Ic530IQPh8Ph8XD8A8PDw9//////mHh4e+OHh4e2245JZWig/EAIAmD74gD8P8uD/B9/lAffgmfU7wQBN6gQDHgn+D4PmvOf/lw////B8Pu//8TggGFip3bWcd4IlATc4D/8+BkCx95v0uMzOAAO7vGkvmPwACAB1rApIT3QADYTJjr4AFxjog1ZYSWq6TZkqA1LgWGBon/WElz6uhUXu3BkKpU9vq2e27LIRkCmNBVeLOzXoI5STalLxKZF8sNfdvS6X15RHpbKU9qG6ra+339b593ee///T9BRZTOsBVWYcXaY7Kb3NVvlUNS7v91/7wzL3GnUWYYa8ImsUBLFhWwOcvJtpc7VKw5ypTLbOv5lljyxe7+eG+9/kWEJnjVipJMzqAYMlzckTlBpahOBQrVaNZ01N3//HWX/vD72ev///+f//BcCsCoYjFYCh6CmUu4icra6jjSV+ZzGI93yrvYRYitrtOgCRGhDi3gQAKYAAAvxpaxNdTjuUWnGQBOECrVsfO1L1ZvtZW89ynGa///mNDGJfW3cnv/X/SWoCi1bU9yrS9tfhhlfkPJqA2lfrL8v3////6pm6tKcpxph91bkJuP/l3LGW6////1c4XdGBAIoISsIWVMgU+C9qaq8pa1686VeknqbuVBaz1ve8d5flz9a/0Ql6Cx3cbKvl+Ii+Sqy5XMLdBRZuOKC4+1O7ta1c3lTa1l9LWxw3Td7/6////9OUABQNjjvQ7FXCm1VTM9C0YCakqwqZT6ZLAlfMU/lruOWWWWs6uu0ussdxGc0229S0JAHzMbCrAYc/2Lp5PXKf9UIIrwjv//87BkFRuVvxgEzOQAHAtuWZGCaACl+EAA0WGbFD/+iktkGGVZa+3/5vbmwedG8KlVepj//6xR0RgCTSL16VSrO5///rlAgbmNOLkteY9W7V/KZpf////QNEJoCSVADmkmjKLTAAgNaAZTUgmU2Mv//////Mew2wzHAZAYZDAS8oYag6lUtmZUW7EYjOdyxmst6//////////MUBrzKYyFwlRwJAJf1ksSf6FRqrBVXf713/7v/3/6//////////9/b7sMRR6ebk2y2WQqTRmAkvpmW3vmot+62SoiUBBABgBAwAA/Et9/SW/5sSpt+YlEfSS/z5dLo7iW/8xLpKs5Ujq/+SJMOF8iKTHcd///Iw9wU4SovGJ5x9GSmbGVf///5JCBBvCelQwTokiUVD2Pl5I7/////ugTzMsJ50eockxQMi6O4OUPU4STGy5MQU1FMy45OS41qqqqqqqqqqqqqqqqqqqqqqqqqqqqqv/zEGQgAAABpADgAAAAAANIAcAAAKqqqqqq"/>
                     </audio>
 
-                    <audio id="audio-music" autobuffer="autobuffer">
+                    <audio id="audio-music" loop autobuffer="autobuffer">
                         <source src="music_whiterat_teamicu.mp3" />
                     </audio>
                 </div>
@@ -149,6 +203,10 @@
                 <div class="pull-right">
                     Epoch: <span id="span-time-length">1</span>
                 </div>
+
+                <audio id="audio-time" autobuffer="autobuffer">
+                    <source src="time.mp3" />
+                </audio>
             </div>
         </div>
 
@@ -164,6 +222,8 @@
                     However, the history will be cleared after this changes.</p>
                 <p>You can control the speed of the simulation and sound volume and zoom the cell plane
                     by moving the sliders at the top.</p>
+                <p>Unfortunately, the history is unbounded now and may consume lots of memory with time.</p>
+                <p>Music by Whiterat(TeamICU).</p>
             </div>
         </div>
     </div>
@@ -174,8 +234,8 @@
     <!--</div>-->
     <!--</footer>-->
 
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
     <script type="text/javascript" src="life.js"></script>
     <script type="text/javascript">
         me.ivanyu.life.LifeJSApp().main();
