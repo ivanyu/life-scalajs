@@ -5,14 +5,14 @@ import me.ivanyu.life.logic
 import me.ivanyu.life.logic.{Changes, Universe}
 import org.scalajs.dom
 import org.scalajs.jquery.jQuery
-import rx.Var
-import rx.core.Obs
+import rx._
 
 class UniverseView(rootElement: dom.html.Div,
                    running: Var[Boolean],
                    universe: Var[Universe],
                    universeChangesStream: Var[Changes],
-                   zoom: Var[Double], volume: Var[VolumeState]) {
+                   zoom: Var[Double], volume: Var[VolumeState])
+                  (implicit ownerCtx: Ctx.Owner, dataCtx: Ctx.Data) {
   import logic.CellPlane._
 
   private val GridColor = "#EBEBEB"
@@ -39,14 +39,14 @@ class UniverseView(rootElement: dom.html.Div,
   private val audioMusic = jqRoot.children("#audio-music")(0).asInstanceOf[dom.html.Audio]
   audioMusic.volume = 0.2
 
-  Obs(volume) {
+  volume.trigger {
     audioClick.muted = volume().muted
     audioClick.volume = volume().volume
     audioMusic.muted = volume().muted
     audioMusic.volume = volume().volume
   }
-  
-  Obs(running) {
+
+  running.trigger {
     if (running()) {
       audioMusic.play()
     } else {
@@ -66,7 +66,7 @@ class UniverseView(rootElement: dom.html.Div,
   private var topBorder = 0
   private var bottomBorder = 0
 
-  Obs(zoom) {
+  zoom.trigger {
     init()
   }
 
@@ -97,11 +97,11 @@ class UniverseView(rootElement: dom.html.Div,
   canvas.onmousedown = canvasOnMouseDown _
   canvas.onmouseup = canvasOnMouseUp _
 
-  Obs(universeChangesStream, skipInitial = true) {
+  universeChangesStream.triggerLater {
     drawChanges(universeChangesStream())
   }
 
-  Obs(universe) {
+  universe.trigger {
     drawUniverse(universe())
   }
 
@@ -130,7 +130,7 @@ class UniverseView(rootElement: dom.html.Div,
     }
   }
 
-  Obs(lastDrewCursor) {
+  lastDrewCursor.trigger {
     // Print coordinates near the cell plane
     lastDrewCursor() match {
       case Some(CellCoords(row, col)) =>

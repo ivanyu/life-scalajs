@@ -1,11 +1,11 @@
 package me.ivanyu.life.controls
 
 import org.scalajs.dom
-import rx.Var
-import rx.core.Obs
+import rx._
 
 class StartStopButton(val btnElement: dom.html.Button,
-                      val running: Var[Boolean]) {
+                      val running: Var[Boolean])
+                     (implicit ownerCtx: Ctx.Owner, dataCtx: Ctx.Data) {
   val clickStream = Var(false)
 
   val label = btnElement.getElementsByClassName("btn-label")(0).asInstanceOf[dom.html.Span]
@@ -15,7 +15,7 @@ class StartStopButton(val btnElement: dom.html.Button,
     clickStream() = !clickStream()
   }
 
-  Obs(running, skipInitial = true) {
+  running.triggerLater {
     if (running()) {
       label.textContent = "Stop"
       symbol.classList.remove("glyphicon-play")

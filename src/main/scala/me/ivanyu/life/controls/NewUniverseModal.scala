@@ -8,7 +8,8 @@ import rx._
 import scala.scalajs.js
 
 class NewUniverseModal(rootElement: dom.html.Div,
-                       universeSize: Var[Int]) {
+                       universeSize: Var[Int])
+                      (implicit ownerCtx: Ctx.Owner, dataCtx: Ctx.Data) {
   val newUniverseParamsStream = Var(NewUniverseParams(-1, randomSeed = false))
 
   private val jqRoot = jQuery(rootElement)
@@ -35,7 +36,7 @@ class NewUniverseModal(rootElement: dom.html.Div,
     true.asInstanceOf[js.Any]
   })
 
-  Obs(universeSize) {
+  universeSize.trigger {
     jqSlider.sliderValue = universeSize()
   }
 }

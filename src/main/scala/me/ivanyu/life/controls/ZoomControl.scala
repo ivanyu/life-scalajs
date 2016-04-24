@@ -2,7 +2,7 @@ package me.ivanyu.life.controls
 
 import org.scalajs.dom
 import org.scalajs.jquery.{JQueryEventObject, jQuery}
-import rx.core.Var
+import rx._
 
 import scala.scalajs.js
 
