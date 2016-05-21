@@ -53,11 +53,11 @@ object LifeJSApp extends JSApp {
       universeSize)
 
     val startStopButton = new StartStopButton(
-      dom.document.getElementById("btn-start-stop").asInstanceOf[dom.html.Button],
+      dom.document.getElementById("btn-start-stop").asInstanceOf[Button],
       running)
 
     val gameSpeedControl = new GameSpeedControl(
-      dom.document.getElementById("control-game-speed").asInstanceOf[dom.html.Div])
+      dom.document.getElementById("control-game-speed").asInstanceOf[Div])
 
     val zoomControl = new ZoomControl(
       dom.document.getElementById("control-zoom").asInstanceOf[Div])
@@ -66,7 +66,7 @@ object LifeJSApp extends JSApp {
       dom.document.getElementById("control-volume").asInstanceOf[Div])
 
     val universeView = new UniverseView(
-      dom.document.getElementById("universe").asInstanceOf[dom.html.Div],
+      dom.document.getElementById("universe").asInstanceOf[Div],
       running, universe, universeChangesStream,
       zoomControl.zoom, volumeControl.volume)
 
