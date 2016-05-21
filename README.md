@@ -5,6 +5,8 @@ Created just for fun by [Ivan Yurchenko](http://ivanyu.me/).
 
 [See it in action](http://ivanyu.github.io/life-scalajs).
 
+[![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.8.svg)](https://www.scala-js.org)
+
 # Build and run
 
 Type
