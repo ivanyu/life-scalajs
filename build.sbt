@@ -1,5 +1,7 @@
 enablePlugins(ScalaJSPlugin)
 
+workbenchSettings
+
 name := "life-scalajs"
 
 version := "1.0"
@@ -12,3 +14,7 @@ libraryDependencies ++= Seq(
   "be.doeraene" %%% "scalajs-jquery" % "0.9.0",
   "com.lihaoyi" %%% "scalarx" % "0.2.8"
 )
+
+bootSnippet := "me.ivanyu.life.LifeJSApp().main();"
+
+refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile)

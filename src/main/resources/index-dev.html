@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="text/javascript" src="/workbench.js"></script>
 
     <style>
         div.inline-slider {
@@ -107,7 +108,7 @@
             <h1>Conway's Game of Life in ScalaJS</h1>
             <p>This is a simple implementation of <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Conway's Game of Life</a>
                 simulator with <a href="http://www.scala-js.org/">ScalaJS</a> and <a href="https://github.com/lihaoyi/scala.rx">ScalaRx</a>.</p>
-            <p>Created just for fun by <a href="http://ivanyu.me/">Ivan Yurchenko</a>.
+            <p>Created just for fun by <a href="https://ivanyu.me/">Ivan Yurchenko</a>.
                 The code is <a href="https://github.com/ivanyu/life-scalajs">on Github</a>.
                 License is MIT.</p>
         </div>
@@ -229,22 +230,6 @@
                 <p>Music by Whiterat(TeamICU).</p>
             </div>
         </div>
-
-        <div class="row">
-            <div id="disqus_thread"></div>
-            <script type="text/javascript">
-                /* * * CONFIGURATION VARIABLES * * */
-                var disqus_shortname = 'ivanyu-github-io-life-scalajs';
-                
-                /* * * DON'T EDIT BELOW THIS LINE * * */
-                (function() {
-                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-                })();
-            </script>
-            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-        </div>
     </div>
 
     <!--<footer class="footer">-->
@@ -255,7 +240,8 @@
 
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-    <script type="text/javascript" src="./target/scala-2.11/life-scalajs-opt.js"></script>
+    <!--<script type="text/javascript" src="../life-scalajs-opt.js"></script>-->
+    <script type="text/javascript" src="../life-scalajs-fastopt.js"></script>
     <script type="text/javascript">
         me.ivanyu.life.LifeJSApp().main();
     </script>
