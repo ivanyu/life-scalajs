@@ -12,10 +12,18 @@ Created just for fun by [Ivan Yurchenko](https://ivanyu.me/).
 Type
 
 ```
+$ sbt ~fastOptJS
+```
+
+and open [http://localhost:12345/target/scala-2.11/classes/index-dev.html](http://localhost:12345/target/scala-2.11/classes/index-dev.html) in your browser.
+
+Use
+
+```
 $ sbt fullOptJS
 ```
 
-and open `index.html` in your browser.
+and `target/scala-2.11/classes/index.html` for a fully optimized version.
 
 # License
 MIT, see LICENSE
