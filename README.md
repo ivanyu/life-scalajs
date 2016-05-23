@@ -1,5 +1,5 @@
 # life-scalajs
-A simple implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) simulator with [ScalaJS](http://www.scala-js.org/) and [Scala.rx](https://github.com/lihaoyi/scala.rx).
+A simple implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) simulator with [Scala.js](http://www.scala-js.org/) and [Scala.rx](https://github.com/lihaoyi/scala.rx).
 
 Created just for fun by [Ivan Yurchenko](https://ivanyu.me/).
 
