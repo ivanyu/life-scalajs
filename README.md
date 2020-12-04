@@ -7,6 +7,8 @@ Created just for fun by [Ivan Yurchenko](https://ivanyu.me/).
 
 [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.8.svg)](https://www.scala-js.org)
 
+![Demo](demo.gif)
+
 # Build and run
 
 Type
